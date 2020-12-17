@@ -1,0 +1,3 @@
+name: RealTimeSync
+main: com.edouardcourty.realtimesync.RealTimeSync
+version: 1.0.0
