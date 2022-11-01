@@ -1,5 +1,6 @@
 package com.edouardcourty.realtimesync.handler;
 
+import com.edouardcourty.realtimesync.entity.WorldConfig;
 import com.edouardcourty.realtimesync.repository.TimeRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
@@ -8,29 +9,32 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Objects;
 
 public class UpdateTimeHandler {
 
-    public static World world;
-    public static JavaPlugin plugin;
-    public static int updateRate;
-    public static GameRule<Boolean> doDayLightCycleGamerule = GameRule.DO_DAYLIGHT_CYCLE;
+    public World world;
+    public JavaPlugin plugin;
 
-    static public void init(JavaPlugin myPlugin)
-    {
-        plugin = myPlugin;
-        world = plugin.getServer().getWorld(Objects.requireNonNull(plugin.getConfig().getString("world")));
-        updateRate = plugin.getConfig().getInt("update_rate");
+    public WorldConfig config;
+    public GameRule<Boolean> doDayLightCycleGamerule = GameRule.DO_DAYLIGHT_CYCLE;
+
+    public UpdateTimeHandler(JavaPlugin plugin, WorldConfig config) {
+        this.plugin = plugin;
+        this.world = this.plugin.getServer().getWorld(config.getWorldName());
+        this.config = config;
     }
 
-    static public void startLoop()
+    public void startLoop()
     {
-        Bukkit.getLogger().info(String.format("Starting loop for world %s. Updating every %s ticks.", world.getName(), updateRate));
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, UpdateTimeHandler::handle, 0, updateRate);
+        if(this.world == null) {
+            this.plugin.getLogger().severe("World " + this.config.getWorldName() + " not found");
+            return;
+        }
+        Bukkit.getLogger().info(String.format("Starting loop for world %s. Updating every %s ticks.", world.getName(), this.config.getUpdateRate()));
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::handle, 0, this.config.getUpdateRate());
     }
 
-    static public void handle()
+    public void handle()
     {
         SimpleDateFormat sdfHours = new SimpleDateFormat("HH");
         SimpleDateFormat sdfMinutes = new SimpleDateFormat("mm");
@@ -46,7 +50,7 @@ public class UpdateTimeHandler {
 
         boolean hasDayLightCycleActivated = world.getGameRuleValue(doDayLightCycleGamerule);
 
-        if (plugin.getConfig().getBoolean("force_daylightcycle_false") && hasDayLightCycleActivated) {
+        if (this.config.isForceDaylightcycleFalse() && hasDayLightCycleActivated) {
             world.setGameRule(doDayLightCycleGamerule, false);
         }
 
