@@ -14,5 +14,9 @@ update_rate: 80
 # Not enabling this can result in weird-looking sky at sunrise and sunset, since the sun will move before being updated.
 force_daylightcycle_false: true
 
+# The timezone to use for time replication
+# The format must be TZ compliant: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+timezone: Europe/Paris
+
 # Will spam the console. Makes the plugin log every time the in-game time is changed.
 debug: false
